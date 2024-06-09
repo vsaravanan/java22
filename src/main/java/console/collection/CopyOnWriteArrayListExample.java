@@ -12,11 +12,23 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 /*
 
+    https://raw.githubusercontent.com/vsaravanan/java22/master/src/main/java/console/collection/CopyOnWriteArrayListExample.java
+
+
+
+        CopyOnWriteArrayList allows the reader and writer threads to operate concurrently
+        without the need for external synchronization.
+        Readers will see a consistent snapshot of the list even if its modified by the writer thread
+
+        High Read Performance:
+        Low Write Performance: Write operations (add, set, remove, etc.) are relatively expensive
+        CopyOnWriteArrayList is not suitable for use cases with frequent write operations.
+        Thread Safety: CopyOnWriteArrayList achieves thread safety
+           by creating a new copy of the underlying array every time there is a modification
+
     CopyOnWriteArrayList is a thread-safe variant of ArrayList in Java
     where all mutative operations (such as add, set, and remove) are implemented
     by making a fresh copy of the underlying array.
-    This class is part of the java.util.concurrent package and is particularly useful
-    in scenarios where reads are more frequent than writes.
 
     Thread Safety: Safe for concurrent use by multiple threads.
     Snapshot Iterators: Iterators do not reflect modifications made to the list after the iterator was created.
