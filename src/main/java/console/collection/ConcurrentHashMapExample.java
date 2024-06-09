@@ -1,33 +1,72 @@
 package console.collection;
 
-/**
- * @author Sarav on 16 Apr 2024
- * @project govtech
- * @package com.govtech.demo.console
- * @class ConcurrentHashMapExample
- */
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * @author Sarav on 09 Jun 2024
+ * @project govtech
+ * @package console.collection
+ * @class ConcurrentHashMapExample
+ */
+
+
+/*
+
+// https://raw.githubusercontent.com/vsaravanan/java22/master/src/main/java/console/collection/ConcurrentHashMapExample.java
+
+ConcurrentHashMap
+
+ConcurrentHashMap is a thread-safe variant of HashMap that allows concurrent access and modification.
+Key Characteristics
+•	Thread Safety: Multiple threads can operate on the map concurrently
+    without the need for explicit synchronization.
+•	Performance: It provides better performance compared to
+    Collections.synchronizedMap due to finer-grained locking.
+•	Atomic Operations: Supports atomic operations like putIfAbsent, remove, replace, etc.
+
+ */
 public class ConcurrentHashMapExample {
     public static void main(String[] args) {
-        ConcurrentHashMap<String, Integer> map = new ConcurrentHashMap<>();
 
-        map.put("A", 1);
-        map.put("B", 2);
-        map.put("C", 3);
+        //ConcurrentHashMap
+        Map<String,String> myMap = new ConcurrentHashMap<String,String>();
+        myMap.put("1", "1");
+        myMap.put("2", "1");
+        myMap.put("3", "1");
+        myMap.put("4", "1");
+        myMap.put("5", "1");
+        myMap.put("6", "1");
+        System.out.println("ConcurrentHashMap before iterator: "+myMap);
+        Iterator<String> it = myMap.keySet().iterator();
 
-        // Thread 1
-        new Thread(() -> {
-            map.put("D", 4);
-            System.out.println("Thread 1: " + map);
-        }).start();
+        while(it.hasNext()){
+            String key = it.next();
+            if(key.equals("3")) myMap.put(key+"new", "new3");
+        }
+        System.out.println("ConcurrentHashMap after iterator: "+myMap);
 
-        // Thread 2
-        new Thread(() -> {
-            map.put("E", 5);
-            System.out.println("Thread 2: " + map);
-        }).start();
+        //HashMap
+        myMap = new HashMap<String,String>();
+        myMap.put("1", "1");
+        myMap.put("2", "1");
+        myMap.put("3", "1");
+        myMap.put("4", "1");
+        myMap.put("5", "1");
+        myMap.put("6", "1");
+        System.out.println("HashMap before iterator: "+myMap);
+        Iterator<String> it1 = myMap.keySet().iterator();
 
-        System.out.println("Main thread: " + map);
+        while(it1.hasNext()){
+            String key = it1.next();
+            if(key.equals("3")) {
+                myMap.put(key+"new", "new3");
+                break; // comment and try to get ConcurrentModificationException
+            }
+        }
+        System.out.println("HashMap after iterator: "+myMap);
     }
 }
+
