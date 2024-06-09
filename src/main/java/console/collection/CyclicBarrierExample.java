@@ -13,7 +13,7 @@ import java.util.concurrent.Executors;
  */
 
 /*
-
+https://www.youtube.com/watch?v=IzEOGpjzAr4&ab_channel=MartOosterveld
 CyclicBarrier is a synchronization aid in Java that allows a set of threads to all wait for each other to reach a common barrier point. This barrier is cyclic because it can be reused after the waiting threads are released. This is particularly useful in scenarios where you need to wait for a number of threads to reach a common point before proceeding further.
 
 Key Characteristics
