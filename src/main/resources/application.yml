@@ -7,3 +7,4 @@ logging:
   file:
     name: application.log
   path: ./logs
+spring.threads.virtual.enabled: true
