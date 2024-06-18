@@ -7,7 +7,12 @@ import java.util.Date;
  * @project govtech
  * @package com.saravanjs.java22.console.corejava
  * @class Immutable
+
+https://raw.githubusercontent.com/vsaravanan/java22/master/src/main/java/com/saravanjs/java22/console/corejava/Immutable.java
+
  */
+
+
 
 final class Person {
     private final String name;
