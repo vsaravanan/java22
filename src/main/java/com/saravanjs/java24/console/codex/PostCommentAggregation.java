@@ -1,15 +1,13 @@
 package com.saravanjs.java24.console.codex;
 
+import com.google.gson.Gson;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -23,49 +21,65 @@ public class PostCommentAggregation {
 
     private static final HttpClient HTTP_CLIENT = HttpClient.newHttpClient();
 
-    private static final Pattern POST_PATTERN = Pattern.compile(
-        "\\{\\s*\"userId\"\\s*:\\s*(\\d+)\\s*,"
-            + "\\s*\"id\"\\s*:\\s*(\\d+)"
-    );
-
-    private static final Pattern COMMENT_PATTERN = Pattern.compile(
-        "\\{\\s*\"postId\"\\s*:\\s*(\\d+)\\s*,"
-            + "\\s*\"id\"\\s*:\\s*(\\d+)"
-    );
+    private static final Gson GSON = new Gson();
 
     record Post(int userId, int id) {}
 
     record Comment(int postId, int id) {}
 
+
     public static List<Post> fetchPosts() {
-        String json = get(POSTS_URL);
-        List<Post> posts = new ArrayList<>();
-        Matcher matcher = POST_PATTERN.matcher(json);
-
-        while (matcher.find()) {
-            posts.add(new Post(
-                Integer.parseInt(matcher.group(1)),
-                Integer.parseInt(matcher.group(2))
-            ));
-        }
-
-        return posts;
+        Post[] posts = GSON.fromJson(get(POSTS_URL), Post[].class);
+        return Arrays.asList(posts);
     }
 
     public static List<Comment> fetchComments() {
-        String json = get(COMMENTS_URL);
-        List<Comment> comments = new ArrayList<>();
-        Matcher matcher = COMMENT_PATTERN.matcher(json);
+        Comment[] comments =
+                GSON.fromJson(get(COMMENTS_URL), Comment[].class);
 
-        while (matcher.find()) {
-            comments.add(new Comment(
-                Integer.parseInt(matcher.group(1)),
-                Integer.parseInt(matcher.group(2))
-            ));
-        }
-
-        return comments;
+        return Arrays.asList(comments);
     }
+
+//    private static final Pattern POST_PATTERN = Pattern.compile(
+//        "\\{\\s*\"userId\"\\s*:\\s*(\\d+)\\s*,"
+//            + "\\s*\"id\"\\s*:\\s*(\\d+)"
+//    );
+//
+//    private static final Pattern COMMENT_PATTERN = Pattern.compile(
+//        "\\{\\s*\"postId\"\\s*:\\s*(\\d+)\\s*,"
+//            + "\\s*\"id\"\\s*:\\s*(\\d+)"
+//    );
+
+//
+//    public static List<Post> fetchPosts() {
+//        String json = get(POSTS_URL);
+//        List<Post> posts = new ArrayList<>();
+//        Matcher matcher = POST_PATTERN.matcher(json);
+//
+//        while (matcher.find()) {
+//            posts.add(new Post(
+//                Integer.parseInt(matcher.group(1)),
+//                Integer.parseInt(matcher.group(2))
+//            ));
+//        }
+//
+//        return posts;
+//    }
+//
+//    public static List<Comment> fetchComments() {
+//        String json = get(COMMENTS_URL);
+//        List<Comment> comments = new ArrayList<>();
+//        Matcher matcher = COMMENT_PATTERN.matcher(json);
+//
+//        while (matcher.find()) {
+//            comments.add(new Comment(
+//                Integer.parseInt(matcher.group(1)),
+//                Integer.parseInt(matcher.group(2))
+//            ));
+//        }
+//
+//        return comments;
+//    }
 
     public static List<Map<String, Integer>> aggregateComments(
         List<Post> posts,
