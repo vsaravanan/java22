@@ -7,9 +7,11 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 public class PostCommentAggregation {
 
@@ -20,66 +22,49 @@ public class PostCommentAggregation {
         "https://coderbyte.com/api/challenges/json/all-comments";
 
     private static final HttpClient HTTP_CLIENT = HttpClient.newHttpClient();
-
     private static final Gson GSON = new Gson();
 
     record Post(int userId, int id) {}
 
     record Comment(int postId, int id) {}
 
-
     public static List<Post> fetchPosts() {
-        Post[] posts = GSON.fromJson(get(POSTS_URL), Post[].class);
-        return Arrays.asList(posts);
+        return fetchList(POSTS_URL, Post[].class);
     }
 
     public static List<Comment> fetchComments() {
-        Comment[] comments =
-                GSON.fromJson(get(COMMENTS_URL), Comment[].class);
-
-        return Arrays.asList(comments);
+        return fetchList(COMMENTS_URL, Comment[].class);
     }
 
-//    private static final Pattern POST_PATTERN = Pattern.compile(
-//        "\\{\\s*\"userId\"\\s*:\\s*(\\d+)\\s*,"
-//            + "\\s*\"id\"\\s*:\\s*(\\d+)"
-//    );
-//
-//    private static final Pattern COMMENT_PATTERN = Pattern.compile(
-//        "\\{\\s*\"postId\"\\s*:\\s*(\\d+)\\s*,"
-//            + "\\s*\"id\"\\s*:\\s*(\\d+)"
-//    );
+    private static <T> List<T> fetchList(
+            String url,
+            Class<T[]> responseType
+    ) {
+        HttpRequest request = HttpRequest.newBuilder(URI.create(url))
+                .GET()
+                .build();
 
-//
-//    public static List<Post> fetchPosts() {
-//        String json = get(POSTS_URL);
-//        List<Post> posts = new ArrayList<>();
-//        Matcher matcher = POST_PATTERN.matcher(json);
-//
-//        while (matcher.find()) {
-//            posts.add(new Post(
-//                Integer.parseInt(matcher.group(1)),
-//                Integer.parseInt(matcher.group(2))
-//            ));
-//        }
-//
-//        return posts;
-//    }
-//
-//    public static List<Comment> fetchComments() {
-//        String json = get(COMMENTS_URL);
-//        List<Comment> comments = new ArrayList<>();
-//        Matcher matcher = COMMENT_PATTERN.matcher(json);
-//
-//        while (matcher.find()) {
-//            comments.add(new Comment(
-//                Integer.parseInt(matcher.group(1)),
-//                Integer.parseInt(matcher.group(2))
-//            ));
-//        }
-//
-//        return comments;
-//    }
+        try {
+            HttpResponse<String> response = HTTP_CLIENT.send(
+                    request,
+                    HttpResponse.BodyHandlers.ofString()
+            );
+
+            if (response.statusCode() != 200) {
+                throw new IllegalStateException(
+                        "GET " + url + " returned HTTP " + response.statusCode()
+                );
+            }
+
+            T[] data = GSON.fromJson(response.body(), responseType);
+            return Arrays.asList(data);
+        } catch (InterruptedException exception) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Request interrupted", exception);
+        } catch (IOException exception) {
+            throw new IllegalStateException("Unable to fetch " + url, exception);
+        }
+    }
 
     public static List<Map<String, Integer>> aggregateComments(
         List<Post> posts,
@@ -110,35 +95,6 @@ public class PostCommentAggregation {
                 return result;
             })
             .toList();
-    }
-
-    private static String get(String url) {
-        HttpRequest request = HttpRequest.newBuilder(URI.create(url))
-            .GET()
-            .build();
-
-        try {
-            HttpResponse<String> response = HTTP_CLIENT.send(
-                request,
-                HttpResponse.BodyHandlers.ofString()
-            );
-
-            if (response.statusCode() != 200) {
-                throw new IllegalStateException(
-                    "GET " + url + " returned HTTP " + response.statusCode()
-                );
-            }
-
-            return response.body();
-        } catch (InterruptedException exception) {
-            Thread.currentThread().interrupt();
-            throw new IllegalStateException("Request interrupted", exception);
-        } catch (IOException exception) {
-            throw new IllegalStateException(
-                "Unable to fetch " + url,
-                exception
-            );
-        }
     }
 
     public static void main(String[] args) {
