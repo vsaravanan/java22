@@ -7,11 +7,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class PostCommentAggregation {
 
@@ -70,31 +66,32 @@ public class PostCommentAggregation {
         List<Post> posts,
         List<Comment> comments
     ) {
-        Map<Integer, Integer> commentCountByPost = new HashMap<>();
+        Map<Integer, Integer> commentCount = new HashMap<>();
 
-        comments.forEach(comment ->
-            commentCountByPost.merge(comment.postId(), 1, Integer::sum)
+        for (Comment c : comments) {
+            commentCount.put(c.postId, commentCount.getOrDefault(c.postId, 0) + 1);
+        }
+
+
+        List<Map<String, Integer>> result = new ArrayList<>();
+        for (Post p : posts) {
+            Map<String, Integer> map = new LinkedHashMap<>();
+            map.put("postId", p.id);
+            map.put("numberOfComments", commentCount.getOrDefault(p.id, 0));
+            result.add(map);
+        }
+
+        result.sort(
+                Comparator.comparingInt((Map<String, Integer> m) -> m.get("numberOfComments"))
+                        .reversed()
+                        .thenComparing(
+                                Comparator.comparingInt((Map<String, Integer> m) -> m.get("postId"))
+                                        .reversed()
+                        )
         );
 
-        return posts.stream()
-            .map(post -> Map.entry(
-                post.id(),
-                commentCountByPost.getOrDefault(post.id(), 0)
-            ))
-            .sorted(
-                Map.Entry.<Integer, Integer>comparingByValue()
-                    .reversed()
-                    .thenComparing(
-                        Map.Entry.<Integer, Integer>comparingByKey().reversed()
-                    )
-            )
-            .map(entry -> {
-                Map<String, Integer> result = new LinkedHashMap<>();
-                result.put("postId", entry.getKey());
-                result.put("numberOfComments", entry.getValue());
-                return result;
-            })
-            .toList();
+        return result;
+
     }
 
     public static void main(String[] args) {
@@ -107,3 +104,5 @@ public class PostCommentAggregation {
         System.out.println(aggregatedComments);
     }
 }
+
+
