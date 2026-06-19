@@ -58,11 +58,11 @@ public class PostCommentAggregation {
 
             T[] data = GSON.fromJson(response.body(), responseType);
             return Arrays.asList(data);
-        } catch (InterruptedException exception) {
+        } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new IllegalStateException("Request interrupted", exception);
-        } catch (IOException exception) {
-            throw new IllegalStateException("Unable to fetch " + url, exception);
+            throw new RuntimeException("Request interrupted", e);
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to fetch " + url, e);
         }
     }
 
